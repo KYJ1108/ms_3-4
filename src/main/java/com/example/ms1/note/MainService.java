@@ -29,7 +29,7 @@ public class MainService {
 
         notebookService.save(notebook);
 
-        Note note = noteService.saveDefault(notebook);
+        Note note = noteService.saveDefault();
         notebook.addNote(note);
 
         return notebookService.save(notebook);
@@ -70,5 +70,39 @@ public class MainService {
         parent.addChild(child);
 
         notebookService.save(parent);
+    }
+
+    public Notebook addToNotebook(Long notebookId) {
+        Notebook notebook = this.getNotebook(notebookId);
+        Note note = noteService.saveDefault();
+        notebook.addNote(note);
+
+        return notebookService.save(notebook);
+    }
+
+    public void delete(Long id){
+        Notebook notebook = this.getNotebook(id);
+
+        if (notebook.getChildren().isEmpty()){
+            deleteBasic(notebook);
+        }else{
+            deleteGroup(notebook);
+        }
+    }
+
+    private void deleteGroup(Notebook notebook) {
+        List<Notebook> children = notebook.getChildren();
+        for (Notebook child : children){
+            deleteBasic(child);
+        }
+        deleteBasic(notebook);
+    }
+
+    private void deleteBasic(Notebook notebook) {
+        List<Note> noteList = notebook.getNoteList();
+        for (Note note : noteList){
+            noteService.delete(note.getId());
+        }
+        notebookService.delete(notebook.getId());
     }
 }
